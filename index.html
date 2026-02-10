@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Sentry: Robotics Security Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+            color: #e0e0e0;
+        }
+
+        .status-box {
+            width: 80%;
+            max-width: 600px;
+            padding: 50px;
+            border-radius: 20px;
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            transition: all 0.4s ease-in-out;
+            border: 4px solid #333;
+        }
+
+        /* Initial/Safe State */
+        .online {
+            background-color: #1b5e20;
+            border-color: #2ecc71;
+            box-shadow: 0 0 30px rgba(46, 204, 113, 0.3);
+        }
+
+        /* Alert/Error State */
+        .error {
+            background-color: #b71c1c;
+            border-color: #e74c3c;
+            box-shadow: 0 0 40px rgba(231, 76, 60, 0.5);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        #timestamp {
+            margin-top: 30px;
+            font-family: 'Courier New', Courier, monospace;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>AI SENTRY COMMAND CENTER</h1>
+
+    <div id="status-display" class="status-box online">
+        AI Sentry: Initializing...
+    </div>
+
+    <div id="timestamp">Last Heartbeat: --:--:--</div>
+
+    <script>
+        async function updateStatus() {
+            try {
+                const response = await fetch('/status');
+                const data = await response.json();
+                const display = document.getElementById('status-display');
+                
+                // Update the text from the Flask global variable
+                display.innerText = data.status;
+
+                // Logic: Turn red if it contains ALERT, Missing, or Error
+                // We use toUpperCase to make it case-insensitive
+                const statusUpper = data.status.toUpperCase();
+                
+                if (statusUpper.includes("ALERT") || statusUpper.includes("MISSING") || statusUpper.includes("ERROR")) {
+                    display.className = "status-box error";
+                } else {
+                    display.className = "status-box online";
+                }
+
+                document.getElementById('timestamp').innerText = "Last Heartbeat: " + new Date().toLocaleTimeString();
+            } catch (error) {
+                console.error("Error fetching status:", error);
+            }
+        }
+
+        // Check for updates every 1000ms (1 second)
+        setInterval(updateStatus, 1000);
+    </script>
+</body>
+</html>
